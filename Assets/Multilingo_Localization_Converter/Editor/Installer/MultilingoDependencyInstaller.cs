@@ -343,9 +343,18 @@ namespace MultilingoSetup
 
         private static void FinishInstallation()
         {
+            _statusMessage = "Installation Complete!";
             Debug.LogWarning("MultiLingo: All dependencies installed successfully.");
-            AssetDatabase.Refresh();
+            
+            // UX Polish: Tell the user what to expect before Unity freezes to recompile
+            EditorUtility.DisplayDialog(
+                "MultiLingo Setup Complete", 
+                "All required dependencies have been installed successfully!\n\nUnity will now compile the scripts. Once finished, the MultiLingo Welcome Window will open automatically.\n\nEnjoy using MultiLingo!", 
+                "Awesome!"
+            );
+
             CloseInstaller();
+            AssetDatabase.Refresh();
         }
 
         private static void CloseInstaller()
