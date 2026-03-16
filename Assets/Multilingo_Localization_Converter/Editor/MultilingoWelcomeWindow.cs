@@ -115,6 +115,17 @@ namespace Multilingo.Localization.Editor
                     Debug.LogWarning("MultiLingo: Could not find Documentation.md. Ensure it is located in Assets/Multilingo_Localization_Converter/");
             }
 
+            GUILayout.Space(10);
+
+            // Dependency Management Button
+            btnStyle.normal.background = MakeTex(2, 2, new Color(0.2f, 0.45f, 0.4f));
+            btnStyle.hover.background = MakeTex(2, 2, new Color(0.3f, 0.55f, 0.5f));
+
+            if (GUILayout.Button(new GUIContent("🔍 Manage Dependencies", "Ensure Unity Localization and other packages are correctly installed."), btnStyle))
+            {
+                MultilingoSetup.MultilingoDependencyInstaller.CheckDependencies(true);
+            }
+
             EditorGUILayout.EndVertical();
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
