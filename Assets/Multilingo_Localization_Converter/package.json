@@ -1,0 +1,23 @@
+{
+  "name": "com.multilingo.localization-converter",
+  "version": "1.0.0",
+  "displayName": "MultiLingo - Localization Converter & Tools",
+  "description": "A powerful Unity Editor tool for translating, converting, and managing localization files. Supports CSV, Excel (.xlsx), JSON, and XML formats with batch processing, translation caching, and Unity integration tools.",
+  "unity": "2020.3",
+  "keywords": [
+    "localization",
+    "translation",
+    "csv",
+    "excel",
+    "i18n",
+    "multilingual",
+    "converter"
+  ],
+  "author": {
+    "name": "Presenting Tech",
+    "url": "https://github.com/presentingtech"
+  },
+  "dependencies": {
+    "com.unity.localization": "1.4.5"
+  }
+}

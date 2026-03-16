@@ -1,0 +1,21 @@
+{
+    "name": "com.multilingo.localization-converter",
+    "rootNamespace": "Multilingo.Localization.Editor",
+    "references": [
+        "com.multilingo.localization",
+        "Unity.TextMeshPro",
+        "Unity.Localization",
+        "Unity.Localization.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
