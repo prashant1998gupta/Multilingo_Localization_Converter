@@ -2,7 +2,6 @@
     "name": "com.multilingo.localization-converter",
     "rootNamespace": "Multilingo.Localization.Editor",
     "references": [
-        "GUID:998cab4204be2fe40ab98e3712973af6",
         "com.multilingo.localization",
         "Unity.TextMeshPro",
         "Unity.Localization",

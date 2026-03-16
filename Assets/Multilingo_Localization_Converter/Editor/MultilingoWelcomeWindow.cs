@@ -123,7 +123,18 @@ namespace Multilingo.Localization.Editor
 
             if (GUILayout.Button(new GUIContent("🔍 Manage Dependencies", "Ensure Unity Localization and other packages are correctly installed."), btnStyle))
             {
-                MultilingoSetup.MultilingoDependencyInstaller.CheckDependencies(true);
+                // Use Reflection to avoid a hard assembly reference. 
+                // This allows the editor to compile even if dependencies are missing.
+                var type = System.Type.GetType("MultilingoSetup.MultilingoDependencyInstaller, Multilingo.Installer");
+                if (type != null)
+                {
+                    var method = type.GetMethod("CheckDependencies", new System.Type[] { typeof(bool) });
+                    if (method != null) method.Invoke(null, new object[] { true });
+                }
+                else
+                {
+                    Debug.LogWarning("MultiLingo: Installer assembly not found. Please wait for Unity to recompile.");
+                }
             }
 
             EditorGUILayout.EndVertical();
