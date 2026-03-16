@@ -94,7 +94,12 @@ namespace MultilingoSetup
                     var installed = _listRequest.Result;
                     foreach (var req in RequiredPackages)
                     {
-                        if (!installed.Any(p => p.name == req.Name))
+                        // Unity 6 Check: com.unity.textmeshpro is now part of com.unity.ugui or core modules.
+                        bool isUnity6 = Application.unityVersion.StartsWith("6");
+                        bool isUnity6TMP = req.Name == "com.unity.textmeshpro" && 
+                                         (isUnity6 || installed.Any(p => p.name == "com.unity.ugui" && p.version.StartsWith("2.")));
+
+                        if (!isUnity6TMP && !installed.Any(p => p.name == req.Name))
                         {
                             _missingPackages.Add(req);
                         }
@@ -308,9 +313,20 @@ namespace MultilingoSetup
                 }
                 else
                 {
-                    _statusMessage = $"Error installing package.";
-                    Debug.LogError($"MultiLingo: Failed to install package: {_addRequest.Error.message}");
-                    _installationInProgress = false;
+                    // If it matches a core package that might be built-in, allow skipping
+                    string pkgName = _missingPackages[_currentPackageIndex].Name;
+                    if (pkgName.Contains("textmeshpro") || pkgName.Contains("addressables"))
+                    {
+                        Debug.LogWarning($"<color=#8866ff><b>MultiLingo:</b></color> Could not explicitly install {pkgName}. This is common in Unity 6 where these are built-in. Continuing...");
+                        _currentPackageIndex++;
+                        InstallNextPackage();
+                    }
+                    else
+                    {
+                        _statusMessage = $"Error installing package.";
+                        Debug.LogError($"MultiLingo: Failed to install package: {_addRequest.Error.message}");
+                        _installationInProgress = false;
+                    }
                 }
             }
         }
