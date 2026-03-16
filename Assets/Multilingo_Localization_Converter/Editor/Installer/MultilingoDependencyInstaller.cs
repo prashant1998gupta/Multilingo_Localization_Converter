@@ -40,9 +40,9 @@ namespace MultilingoSetup
         // --- MAIN DEPENDENCIES DEFINITION ---
         private static readonly PackageInfo[] RequiredPackages = new PackageInfo[]
         {
-            new PackageInfo("com.unity.localization", "Unity Localization", "1.4.5"),
+            new PackageInfo("com.unity.localization", "Unity Localization", "1.5.10"),
             new PackageInfo("com.unity.textmeshpro", "TextMeshPro"),
-            new PackageInfo("com.unity.addressables", "Addressables")
+            new PackageInfo("com.unity.addressables", "Addressables", "1.21.19")
         };
 
         [InitializeOnLoadMethod]
@@ -99,7 +99,17 @@ namespace MultilingoSetup
                         bool isUnity6TMP = req.Name == "com.unity.textmeshpro" && 
                                          (isUnity6 || installed.Any(p => p.name == "com.unity.ugui" && p.version.StartsWith("2.")));
 
-                        if (!isUnity6TMP && !installed.Any(p => p.name == req.Name))
+                        var installedPkg = installed.FirstOrDefault(p => p.name == req.Name);
+                        bool needsUpdate = false;
+                        
+                        if (installedPkg != null && !string.IsNullOrEmpty(req.Version))
+                        {
+                            // If installed version is lower than required, mark for update
+                            if (IsVersionLower(installedPkg.version, req.Version))
+                                needsUpdate = true;
+                        }
+
+                        if (!isUnity6TMP && (installedPkg == null || needsUpdate))
                         {
                             _missingPackages.Add(req);
                         }
@@ -341,6 +351,21 @@ namespace MultilingoSetup
         private static void CloseInstaller()
         {
             if (HasOpenInstances<MultilingoDependencyInstaller>()) GetWindow<MultilingoDependencyInstaller>().Close();
+        }
+
+        private static bool IsVersionLower(string current, string required)
+        {
+            try
+            {
+                // Remove any non-numeric suffixes like -preview or -f1
+                string cleanCurrent = new string(current.TakeWhile(c => char.IsDigit(c) || c == '.').ToArray()).TrimEnd('.');
+                string cleanRequired = new string(required.TakeWhile(c => char.IsDigit(c) || c == '.').ToArray()).TrimEnd('.');
+                
+                System.Version vCurrent = new System.Version(cleanCurrent);
+                System.Version vRequired = new System.Version(cleanRequired);
+                return vCurrent < vRequired;
+            }
+            catch { return false; }
         }
 
         private Texture2D MakeTex(int width, int height, Color col)
