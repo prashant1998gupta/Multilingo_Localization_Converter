@@ -48,9 +48,13 @@ namespace MultilingoSetup
         [InitializeOnLoadMethod]
         private static void OnProjectLoaded()
         {
-            // Use Warning level to ensure it shows even if Info logs are hidden
-            Debug.LogWarning("<color=#8866ff><b>MultiLingo:</b></color> Setup Wizard Initialized. Starting dependency check...");
-            EditorApplication.delayCall += () => CheckDependencies(false);
+            if (!CanRunAutomaticDependencyCheck())
+            {
+                return;
+            }
+
+            Debug.Log("<color=#8866ff><b>MultiLingo:</b></color> Setup Wizard initialized. Starting dependency check...");
+            EditorApplication.delayCall += StartAutomaticDependencyCheck;
         }
 
         [MenuItem("Tools/Multilingo/Force Dependency Check", priority = 100)]
@@ -58,9 +62,18 @@ namespace MultilingoSetup
 
         public static void CheckDependencies(bool manual)
         {
+            if (!manual && !CanRunAutomaticDependencyCheck())
+            {
+                return;
+            }
+
             if (_isChecking || _installationInProgress)
             {
-                ShowWindow();
+                if (CanShowEditorUi())
+                {
+                    ShowWindow();
+                }
+
                 return;
             }
 
@@ -70,7 +83,10 @@ namespace MultilingoSetup
             _statusMessage = "Connecting to Package Manager...";
             
             // SHOW WINDOW IMMEDIATELY
-            ShowWindow();
+            if (CanShowEditorUi())
+            {
+                ShowWindow();
+            }
 
             _listRequest = Client.List(true);
             EditorApplication.update += CheckListProgress;
@@ -120,24 +136,31 @@ namespace MultilingoSetup
                         _statusMessage = $"Missing {_missingPackages.Count} system components.";
                         
                         // Force a popup if it's the first check and we're missing things
-                        if (!_manualCheck && !EditorApplication.isPlayingOrWillChangePlaymode)
+                        if (!_manualCheck && !EditorApplication.isPlayingOrWillChangePlaymode && CanShowEditorUi())
                         {
                             EditorUtility.DisplayDialog("MultiLingo Setup", 
                                 $"MultiLingo needs to install {_missingPackages.Count} required dependencies (Unity Localization, etc.) to fix your project errors.\n\nClick OK to open the Setup Wizard.", "OK");
                         }
                         
-                        ShowWindow(); 
+                        if (CanShowEditorUi())
+                        {
+                            ShowWindow();
+                        }
                     }
                     else
                     {
-                        Debug.LogWarning("<color=#8866ff><b>MultiLingo:</b></color> All dependencies satisfied.");
+                        Debug.Log("<color=#8866ff><b>MultiLingo:</b></color> All dependencies satisfied.");
                         if (!_manualCheck)
                         {
                             CloseInstaller();
                         }
                         else
                         {
-                            EditorUtility.DisplayDialog("MultiLingo", "All core dependencies (Unity Localization, TMP, Addressables) are already installed!", "Great!");
+                            if (CanShowEditorUi())
+                            {
+                                EditorUtility.DisplayDialog("MultiLingo", "All core dependencies (Unity Localization, TMP, Addressables) are already installed!", "Great!");
+                            }
+
                             CloseInstaller();
                         }
                     }
@@ -147,7 +170,7 @@ namespace MultilingoSetup
                     _statusMessage = "Package Manager is currently busy. Please wait...";
                     Debug.LogWarning("<color=#8866ff><b>MultiLingo:</b></color> Package Manager is currently busy.");
                     
-                    if (_manualCheck)
+                    if (_manualCheck && CanShowEditorUi())
                         EditorUtility.DisplayDialog("MultiLingo", "Could not check dependencies because Package Manager is currently busy.", "OK");
                 }
             }
@@ -155,6 +178,11 @@ namespace MultilingoSetup
 
         public static void ShowWindow()
         {
+            if (!CanShowEditorUi())
+            {
+                return;
+            }
+
             var window = GetWindow<MultilingoDependencyInstaller>(true, "MultiLingo Setup Wizard", true);
             window.minSize = new Vector2(500, 380);
             window.maxSize = new Vector2(500, 380);
@@ -347,11 +375,14 @@ namespace MultilingoSetup
             Debug.LogWarning("MultiLingo: All dependencies installed successfully.");
             
             // UX Polish: Tell the user what to expect before Unity freezes to recompile
-            EditorUtility.DisplayDialog(
-                "MultiLingo Setup Complete", 
-                "All required dependencies have been installed successfully!\n\nUnity will now compile the scripts. Once finished, the MultiLingo Welcome Window will open automatically.\n\nEnjoy using MultiLingo!", 
-                "Awesome!"
-            );
+            if (CanShowEditorUi())
+            {
+                EditorUtility.DisplayDialog(
+                    "MultiLingo Setup Complete", 
+                    "All required dependencies have been installed successfully!\n\nUnity will now compile the scripts. Once finished, the MultiLingo Welcome Window will open automatically.\n\nEnjoy using MultiLingo!", 
+                    "Awesome!"
+                );
+            }
 
             CloseInstaller();
             AssetDatabase.Refresh();
@@ -360,6 +391,26 @@ namespace MultilingoSetup
         private static void CloseInstaller()
         {
             if (HasOpenInstances<MultilingoDependencyInstaller>()) GetWindow<MultilingoDependencyInstaller>().Close();
+        }
+
+        private static void StartAutomaticDependencyCheck()
+        {
+            if (!CanRunAutomaticDependencyCheck())
+            {
+                return;
+            }
+
+            CheckDependencies(false);
+        }
+
+        private static bool CanRunAutomaticDependencyCheck()
+        {
+            return !Application.isBatchMode && !AssetDatabase.IsAssetImportWorkerProcess();
+        }
+
+        private static bool CanShowEditorUi()
+        {
+            return !Application.isBatchMode && !AssetDatabase.IsAssetImportWorkerProcess();
         }
 
         private static bool IsVersionLower(string current, string required)
