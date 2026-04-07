@@ -208,7 +208,7 @@ If MultiLingo has saved you time and made your localization workflow easier, con
 
 <p align="center">
   <a href="https://buymeacoffee.com/logic_builder">
-    <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=logic_builder&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee" width="250"/>
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="250"/>
   </a>
 </p>
 
